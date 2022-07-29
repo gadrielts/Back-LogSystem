@@ -1,19 +1,18 @@
 import express from 'express';
 import https from 'https';
-import path from 'path';
+import fs from 'fs';
 
 import Routes from './routes';
 
 const port = process.env.PORT;
 const app = express();
 
-const server = https.createServer(
-  {
-    cert: path.resolve(__dirname, 'ssl', 'cert.pem'),
-    key: path.resolve(__dirname, 'ssl', 'privkey.pem'),
-  },
-  app,
-);
+const options = {
+  cert: fs.readFileSync('./src/ssl/cert.pem'),
+  key: fs.readFileSync('./src/ssl/privkey.pem'),
+};
+
+const server = https.createServer(options, app);
 
 app.use(express.json());
 app.use(Routes);
