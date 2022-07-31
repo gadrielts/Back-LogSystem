@@ -118,7 +118,7 @@ class AuthController {
 
   async Perfil(req: Request, res: Response) {
     const { email, username } = req.query as { email: string; username: string };
-    const EmailOrUsername = email || username;
+    const EmailOrUsername = email || username || req.Authenticated;
 
     if (!EmailOrUsername) {
       return res.status(400).json({
@@ -129,7 +129,7 @@ class AuthController {
     // Return Service Get Data User
     try {
       const data = await authService.Perfil({
-        type: email ? 'email' : 'username',
+        type: email || req.Authenticated ? 'email' : 'username',
         data: EmailOrUsername,
       });
 
