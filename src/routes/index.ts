@@ -4,6 +4,8 @@ import Cors, { CorsOptions } from 'cors';
 import LogsRouter from './logs.routes';
 import UsersRouter from './users.routes';
 
+import ensureAuth from '../middlewares/ensureAuth';
+
 const routes = Router();
 
 const optionsCors = {
@@ -16,7 +18,7 @@ const optionsCors = {
 
 routes.use(Cors(optionsCors));
 
-routes.use('/logs', LogsRouter);
+routes.use('/logs', ensureAuth, LogsRouter);
 routes.use('/users', UsersRouter);
 
 export default routes;

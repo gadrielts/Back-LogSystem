@@ -1,19 +1,32 @@
 import { Request, Response } from 'express';
 
+import authService from '../services/authService';
+
 class AuthController {
-  Register(req: Request, res: Response) {
+  async Register(req: Request, res: Response) {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
       return res.status(400).json({
-        error: 'No Content',
+        message: 'No Content',
       });
     }
 
     // Return Service Create User
+    try {
+      const data = await authService.Register({ username, email, password });
+      return res.status(201).json(data);
+    } catch (err) {
+      const { message } = err as Error;
+      console.error(message);
+
+      return res.status(400).json({
+        message,
+      });
+    }
   }
 
-  Login(req: Request, res: Response) {
+  async Login(req: Request, res: Response) {
     const { username, email, password } = req.body;
     const EmailOrUsername = username || email;
 
@@ -24,57 +37,109 @@ class AuthController {
     }
 
     // Return Service Login
+
+    try {
+      const data = await authService.Login(
+        {
+          type: email ? 'email' : 'username',
+          data: EmailOrUsername,
+        },
+        password,
+      );
+
+      return res.status(202).json(data);
+    } catch (err) {
+      const { message } = err as Error;
+      console.error(message);
+
+      return res.status(401).json({ message });
+    }
   }
 
-  Edit(req: Request, res: Response) {
-    const item = req.query.item as string;
-    const { id } = req.params;
+  async Edit(req: Request, res: Response) {
+    const { email, username } = req.query as { email: string; username: string };
+    const { newEmail, newPassword, newUsername } = req.body;
+    const EmailOrUsername = email || username;
 
-    if (!id) {
+    if (!EmailOrUsername) {
       return res.status(400).json({
         message: 'No Id',
       });
     }
 
-    if (!item) {
-      return res.status(400).json({
-        message: 'No Item',
-      });
-    }
-
-    const itens = ['email', 'username', 'password'];
-
-    if (!itens.includes(item)) {
-      return res.status(400).json({
-        message: 'Invalid item',
-      });
-    }
-
     // Return Service Edit User
+    try {
+      const data = await authService.Edit(
+        {
+          type: email ? 'email' : 'username',
+          data: EmailOrUsername,
+        },
+        {
+          email: newEmail,
+          password: newPassword,
+          username: newUsername,
+        },
+      );
+
+      return res.status(200).json(data);
+    } catch (err) {
+      const { message } = err as Error;
+      console.error(message);
+
+      return res.status(401).json({ message });
+    }
   }
 
-  Delete(req: Request, res: Response) {
-    const { id } = req.params;
+  async Delete(req: Request, res: Response) {
+    const { email, username } = req.query as { email: string; username: string };
+    const EmailOrUsername = email || username;
 
-    if (!id) {
+    if (!EmailOrUsername) {
       return res.status(400).json({
         message: 'No Id',
       });
     }
 
     // Return Service Delete User
+    try {
+      const data = await authService.Delete({
+        type: email ? 'email' : 'username',
+        data: EmailOrUsername,
+      });
+
+      return res.status(200).json(data);
+    } catch (err) {
+      const { message } = err as Error;
+      console.error(message);
+
+      return res.status(401).json({ message });
+    }
   }
 
-  Perfil(req: Request, res: Response) {
-    const { id } = req.params;
+  async Perfil(req: Request, res: Response) {
+    const { email, username } = req.query as { email: string; username: string };
+    const EmailOrUsername = email || username || req.Authenticated;
 
-    if (!id) {
+    if (!EmailOrUsername) {
       return res.status(400).json({
         message: 'No Id',
       });
     }
 
     // Return Service Get Data User
+    try {
+      const data = await authService.Perfil({
+        type: email || req.Authenticated ? 'email' : 'username',
+        data: EmailOrUsername,
+      });
+
+      res.status(200).json(data);
+    } catch (err) {
+      const { message } = err as Error;
+      console.error(message);
+
+      return res.status(401).json({ message });
+    }
   }
 }
 
